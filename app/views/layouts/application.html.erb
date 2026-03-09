@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-full bg-slate-50">
   <head>
     <title><%= content_for(:title) || "Payroll Attendance" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -14,16 +14,157 @@
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="icon" href="/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+    </style>
 
     <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="h-full flex text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900" data-controller="mobile-nav" data-action="keydown.esc@window->mobile-nav#close">
+    <% employees_nav_active = current_page?(employees_path) %>
+
+    <!-- Sidebar for Desktop -->
+    <aside class="w-64 flex-shrink-0 bg-white border-r border-slate-200 shadow-[2px_0_8px_-4px_rgba(0,0,0,0.1)] hidden md:flex flex-col z-20 transition-all duration-300">
+      <div class="h-16 flex items-center px-5 border-b border-slate-100">
+        <%= link_to employees_path, class: "flex items-center gap-2 group" do %>
+          <div class="h-9 w-9 shrink-0 self-end">
+            <%= image_tag "/logo.png", alt: "Payroll logo", class: "h-full w-full object-contain" %>
+          </div>
+          <div class="leading-tight">
+            <p class="text-base font-bold tracking-tight text-slate-900">Payroll Attendance</p>
+          </div>
+        <% end %>
+      </div>
+      <nav class="flex-1 px-4 py-6 space-y-1.5">
+        <%= link_to employees_path, class: "group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg border transition-all duration-200 #{employees_nav_active ? 'bg-indigo-50/80 text-indigo-800 shadow-sm border-indigo-100/50 ring-1 ring-indigo-600/10' : 'text-slate-600 hover:bg-indigo-50/80 hover:text-indigo-800 border-transparent'}" do %>
+          <svg class="w-5 h-5 flex-shrink-0 #{employees_nav_active ? 'text-indigo-500' : 'text-slate-400 group-hover:text-indigo-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          Employees
+        <% end %>
+      </nav>
+      <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+        <div class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white hover:shadow-sm ring-1 ring-transparent hover:ring-slate-200 cursor-pointer">
+          <div class="h-9 w-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm shadow-sm ring-1 ring-indigo-200">
+            HR
+          </div>
+          <div class="text-sm truncate">
+            <p class="font-medium text-slate-900 truncate">HR Manager</p>
+            <p class="text-xs text-slate-500 truncate">hr@company.com</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile Drawer -->
+    <div class="fixed inset-0 z-40 hidden md:hidden" data-mobile-nav-target="overlay">
+      <div class="absolute inset-0 bg-slate-900/30 opacity-0 transition-opacity duration-200" data-mobile-nav-target="backdrop" data-action="click->mobile-nav#close"></div>
+      <aside class="absolute inset-y-0 left-0 w-72 max-w-[85vw] -translate-x-full bg-white shadow-2xl transition-transform duration-200 flex flex-col" data-mobile-nav-target="panel">
+        <div class="h-16 flex items-center justify-between px-5 border-b border-slate-100">
+          <%= link_to employees_path, class: "flex items-center gap-2", data: { action: "click->mobile-nav#close" } do %>
+            <div class="h-8 w-8 shrink-0 self-end">
+              <%= image_tag "/logo.png", alt: "Payroll logo", class: "h-full w-full object-contain" %>
+            </div>
+            <p class="text-base font-bold tracking-tight text-slate-900">Payroll Attendance</p>
+          <% end %>
+          <button type="button" class="p-2 text-slate-500 hover:text-slate-900" data-action="click->mobile-nav#close" aria-label="Close menu">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <nav class="flex-1 px-4 py-6 space-y-2">
+          <%= link_to employees_path, class: "group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg border transition-all duration-200 #{employees_nav_active ? 'bg-indigo-50/80 text-indigo-800 shadow-sm border-indigo-100/50 ring-1 ring-indigo-600/10' : 'text-slate-600 hover:bg-indigo-50/80 hover:text-indigo-800 border-transparent'}", data: { action: "click->mobile-nav#close" } do %>
+            <svg class="w-5 h-5 flex-shrink-0 #{employees_nav_active ? 'text-indigo-500' : 'text-slate-400 group-hover:text-indigo-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            Employees
+          <% end %>
+        </nav>
+      </aside>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F8FAFC]">
+      <!-- Mobile Header -->
+      <header class="md:hidden bg-white/80 backdrop-blur-md border-b border-slate-200 h-16 flex items-center justify-between px-4 z-10 shrink-0 shadow-sm sticky top-0">
+        <div class="flex items-center gap-2">
+          <div class="h-8 w-8 shrink-0 self-end">
+            <%= image_tag "/logo.png", alt: "Payroll logo", class: "h-full w-full object-contain" %>
+          </div>
+          <div class="leading-tight">
+            <span class="block text-sm font-bold tracking-tight text-slate-900">Payroll Attendance</span>
+          </div>
+        </div>
+        <button type="button" class="-m-2.5 p-2.5 text-slate-600 hover:text-slate-900 transition-colors" data-action="click->mobile-nav#open" aria-label="Open menu">
+          <span class="sr-only">Open sidebar</span>
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path></svg>
+        </button>
+      </header>
+
+      <!-- Main scrollable area -->
+      <main class="flex-1 overflow-y-auto w-full">
+        <div class="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 relative z-10 w-full">
+          <div class="flex justify-end" data-controller="live-clock">
+            <div class="inline-flex max-w-full items-start gap-x-3 px-1 py-1 sm:items-center sm:justify-end">
+              <span class="inline-flex h-8 w-8 items-center justify-center text-indigo-700">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </span>
+              <div class="flex min-w-0 items-center gap-x-3">
+                <div class="leading-tight">
+                  <p class="text-[11px] font-semibold uppercase tracking-wide text-indigo-700">วันนี้</p>
+                  <p class="text-xs sm:text-sm font-semibold text-indigo-900" data-live-clock-target="date"></p>
+                </div>
+                <div class="h-8 w-px bg-indigo-200/70"></div>
+                <div class="leading-tight">
+                  <p class="text-[11px] font-semibold uppercase tracking-wide text-indigo-700">เวลาปัจจุบัน</p>
+                  <p class="whitespace-nowrap text-sm sm:text-base font-bold tabular-nums text-indigo-900" data-live-clock-target="time"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <% if notice.present? %>
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 shadow-sm relative overflow-hidden transform transition-all animate-in fade-in slide-in-from-top-2">
+              <div class="absolute inset-y-0 left-0 w-1 bg-emerald-500"></div>
+              <div class="flex items-center">
+                <div class="flex-shrink-0 bg-emerald-100 rounded-full p-1 mr-3">
+                  <svg class="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <p class="text-sm font-medium text-emerald-800"><%= notice %></p>
+              </div>
+            </div>
+          <% end %>
+          <% if alert.present? %>
+            <div class="rounded-xl border border-red-200 bg-red-50/80 p-4 shadow-sm relative overflow-hidden transform transition-all animate-in fade-in slide-in-from-top-2">
+               <div class="absolute inset-y-0 left-0 w-1 bg-red-500"></div>
+               <div class="flex items-center">
+                 <div class="flex-shrink-0 bg-red-100 rounded-full p-1 mr-3">
+                   <svg class="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                 </div>
+                 <p class="text-sm font-medium text-red-800"><%= alert %></p>
+               </div>
+            </div>
+          <% end %>
+
+          <div class="animate-in fade-in duration-500 slide-in-from-bottom-4 w-full">
+            <%= yield %>
+          </div>
+        </div>
+      </main>
+    </div>
   </body>
 </html>
